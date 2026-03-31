@@ -36,3 +36,11 @@ Suspicious IPs:
 - Real-time log monitoring
 - Web dashboard
 - Cloud integration
+
+## 📊 Sample Output
+![Output](output.png)
+
+## 🧠 Learning Outcome
+- Learned Java file handling and parsing
+- Used HashMap for tracking frequency
+- Implemented basic log analysis logic similar to real-world systems
