@@ -1,46 +1,66 @@
-# Smart Log Analyzer (Java)
+🚀 Smart Log Analyzer (Spring Boot)
 
-## 📌 Description
-A Java-based tool to analyze server logs and detect:
-- Errors
-- Failed login attempts
-- Suspicious IP addresses
+📌 Overview
 
-## ⚙️ Features
-- Parses log files
-- Counts errors and login failures
-- Detects suspicious IPs (>5 attempts)
-- Generates summary report
+A production-ready log analysis backend built using Spring Boot.
+This tool processes server log files and detects errors, failed login attempts, and suspicious IP activity.
 
-## 🛠️ Tech Stack
-- Java
-- File Handling
-- HashMap
+⸻
 
-## ▶️ How to Run
-1. Compile:
-   javac src/*.java
+⚙️ Features
+	•	📂 Upload .log files via REST API
+	•	🔍 Detect errors and failed logins
+	•	🌐 Identify suspicious IPs
+	•	📊 JSON-based report generation
+	•	📘 Swagger UI for API testing
 
-2. Run:
-   java -cp src Main
+⸻
 
-## 📊 Sample Output
-Total Logs: 12  
-Errors: 2  
-Failed Logins: 7  
+🛠️ Tech Stack
+	•	Java 17
+	•	Spring Boot
+	•	Maven
+	•	REST API
+	•	Swagger (OpenAPI)
 
-Suspicious IPs:  
-192.168.1.10 -> 6 attempts
+⸻
 
-## 🚀 Future Improvements
-- Real-time log monitoring
-- Web dashboard
-- Cloud integration
+🚀 API Endpoint
 
-## 📊 Sample Output
-![Output](output.png)
+Analyze Logs
 
-## 🧠 Learning Outcome
-- Learned Java file handling and parsing
-- Used HashMap for tracking frequency
-- Implemented basic log analysis logic similar to real-world systems
+POST /api/logs/analyze
+
+Request
+	•	Type: multipart/form-data
+	•	Key: file
+	•	Value: .log file
+
+   {
+  "totalLogs": 12,
+  "errors": 2,
+  "failedLogins": 7,
+  "suspiciousIPs": {
+    "192.168.1.10": 6
+  }
+}
+
+🧪 Run Locally
+mvn spring-boot:run
+
+📘 Swagger UI
+
+http://localhost:8080/swagger-ui/index.html
+
+🌟 Future Improvements
+	•	Real-time log monitoring
+	•	Cloud deployment (Azure)
+	•	Dashboard UI (React)
+	•	Alert system (Email/Slack)
+
+⸻
+
+👨‍💻 Author
+
+Sohel Shaik
+:::
