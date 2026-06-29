@@ -42,24 +42,38 @@ Tools
 * VS Code
 
 ⸻
+## Project Structure
 
-Project Structure
-
-src
-├── main
-│   ├── java
-│   │   └── com/sohel/loganalyzer
-│   │       ├── controller
-│   │       ├── service
-│   │       └── model
-│   │
-│   └── resources
-│       └── static
-│           ├── index.html
-│           ├── style.css
-│           └── script.js
+```text
+smart-log-analyzer-java
 │
-└── test
+├── src
+│   ├── main
+│   │   ├── java/com/sohel/loganalyzer
+│   │   │   ├── controller
+│   │   │   ├── model
+│   │   │   └── service
+│   │   │
+│   │   └── resources
+│   │       ├── static
+│   │       │   ├── index.html
+│   │       │   ├── style.css
+│   │       │   └── script.js
+│   │       │
+│   │       └── application.properties
+│   │
+│   └── test
+│
+├── legacy
+│   ├── LogParser.java
+│   ├── Main.java
+│   ├── Report.java
+│   └── ReportGenerator.java
+│
+├── sample.log
+├── pom.xml
+└── README.md
+```
 
 ⸻
 
