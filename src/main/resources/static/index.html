@@ -7,150 +7,81 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<!-- 🔝 NAVBAR -->
-<header class="navbar">
-    <div class="logo">🚀 Log Analyzer</div>
+<div class="container">
 
-    <nav>
-        <span>Dashboard</span>
-        <span>Logs</span>
-        <span>Analytics</span>
-    </nav>
+    <header>
+        <h1>Smart Log Analyzer</h1>
+        <p>Security and Operational Log Monitoring Dashboard</p>
+    </header>
 
-    <button id="themeToggle">🌙</button>
-</header>
+    <section class="upload-card">
 
-<!-- 🎯 MAIN -->
-<main>
+        <h2>Upload Log File</h2>
 
-    <!-- HERO -->
-    <section class="hero">
-        <h1>Analyze Server Logs Instantly</h1>
-        <p>Detect anomalies, failed logins, and suspicious IP activity</p>
+        <div class="upload-row">
+            <input type="file" id="fileInput">
+            <button onclick="uploadFile()">Analyze Logs</button>
+        </div>
+
+        <p id="status"></p>
+
     </section>
 
-    <!-- 📂 UPLOAD -->
-    <section class="upload-section">
+    <section class="stats-grid">
 
-        <div class="upload-box" id="dropArea">
-            <div class="upload-content">
-                <div class="icon">📂</div>
-                <h3>Upload Log File</h3>
-
-                <input type="file" id="fileInput" hidden>
-
-                <button onclick="document.getElementById('fileInput').click()">
-                    Choose File
-                </button>
-
-                <p id="fileName" class="file-name"></p>
-
-                <button onclick="uploadFile()">Analyze Logs</button>
-            </div>
+        <div class="card">
+            <h3>Total Logs</h3>
+            <span id="totalLogs">0</span>
         </div>
 
-        <div id="status" class="status"></div>
-
-        <!-- ACTIONS -->
-        <div class="actions">
-            <button onclick="downloadResults()">⬇️ JSON</button>
-            <button onclick="exportCSV()">📁 CSV</button>
+        <div class="card">
+            <h3>Errors</h3>
+            <span id="errors">0</span>
         </div>
 
-        <!-- AUTO REFRESH -->
-        <div class="auto-refresh">
-            <label>
-                <input type="checkbox" id="autoRefresh">
-                🔁 Auto Refresh
-            </label>
+        <div class="card">
+            <h3>Failed Logins</h3>
+            <span id="failedLogins">0</span>
+        </div>
+
+        <div class="card">
+            <h3>Suspicious IPs</h3>
+            <span id="ipCount">0</span>
         </div>
 
     </section>
 
-    <!-- 📊 DASHBOARD -->
-    <section id="dashboard" class="dashboard hidden">
+    <section class="chart-card">
+        <h2>Analysis Overview</h2>
+        <canvas id="logChart"></canvas>
+    </section>
 
-        <!-- METRICS -->
-        <div class="metrics">
-            <div class="card">
-                <h4>Total Logs</h4>
-                <h2 id="totalLogs">0</h2>
-            </div>
+    <section class="table-card">
 
-            <div class="card error">
-                <h4>Errors</h4>
-                <h2 id="errors">0</h2>
-            </div>
+        <h2>Suspicious IP Activity</h2>
 
-            <div class="card warning">
-                <h4>Failed Logins</h4>
-                <h2 id="failedLogins">0</h2>
-            </div>
-        </div>
+        <table>
 
-        <!-- 📊 CHART -->
-        <div class="chart-section">
-            <h2>📊 Log Analysis</h2>
-            <canvas id="logChart"></canvas>
-        </div>
+            <thead>
+            <tr>
+                <th>IP Address</th>
+                <th>Attempts</th>
+                <th>Risk Level</th>
+            </tr>
+            </thead>
 
-        <!-- 🔍 SEARCH -->
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Search IP...">
-        </div>
+            <tbody id="ipTableBody">
 
-        <!-- TABLE -->
-        <div class="table-section">
-            <h2>⚠️ Suspicious Activity</h2>
+            </tbody>
 
-            <table id="ipTable">
-                <thead>
-                    <tr>
-                        <th>IP Address</th>
-                        <th>Attempts</th>
-                        <th>Risk</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        </table>
 
     </section>
 
-    <!-- 🕒 HISTORY -->
-    <section class="history">
-        <h2>🕒 Analysis History</h2>
-        <ul id="historyList"></ul>
-    </section>
-
-</main>
-
-<!-- 🔻 FOOTER -->
-<footer class="footer">
-    <p>Smart Log Analyzer • Spring Boot + Java</p>
-</footer>
-
-<!-- 🔄 LOADER -->
-<div id="loader" class="loader hidden">
-    <div class="spinner"></div>
-    <p>Processing logs...</p>
-</div>
-
-<!-- 🔔 TOAST -->
-<div id="toast" class="toast hidden"></div>
-
-<!-- 🧾 MODAL -->
-<div id="modal" class="modal hidden">
-    <div class="modal-content">
-        <h3>IP Details</h3>
-        <p id="modalText"></p>
-        <button onclick="closeModal()">Close</button>
-    </div>
 </div>
 
 <script src="script.js"></script>
