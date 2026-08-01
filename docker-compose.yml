@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  loganalyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-log-analyzer
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-Xmx512m -Xms256m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8080/v3/api-docs || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
