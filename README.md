@@ -1,149 +1,118 @@
-# 🛡️ Smart Log Analyzer (Enterprise Edition)
+# 🛡️ Smart Log Analyzer (Enterprise Security & Operational Intelligence)
 
 [![Java 17](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot 3.4](https://img.shields.io/badge/Spring%20Boot-3.4.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-blue.svg)](https://supabase.com/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/Build-Passing-success.svg)](#)
 
-A production-ready enterprise security & operational log monitoring application built with **Java 17**, **Spring Boot 3.4**, **Spring Security**, **Spring Data JPA**, **H2 In-Memory DB**, **SLF4J/Logback**, **Swagger/OpenAPI 3**, **Docker**, and a modern **Glassmorphic Responsive Dashboard**.
+A production-grade enterprise security and operational log monitoring platform built with **Java 17**, **Spring Boot 3.4**, **Spring Security**, **Spring Data JPA**, **Supabase PostgreSQL**, **SLF4J/Logback**, **Swagger/OpenAPI 3**, **Docker**, and an interactive **Glassmorphic Security Dashboard UI**.
 
 ---
 
 ## 🌟 Executive Summary & Features
 
-**Smart Log Analyzer** parses system log files, evaluates security threats (e.g. brute-force SSH/authentication attempts), calculates risk levels for IP addresses, tracks operational errors, and persists analysis reports for audit and historical trend reporting.
+**Smart Log Analyzer** parses system and application log streams, detects operational errors and security authentication failures (such as SSH brute-force attempts), evaluates threat risk levels for suspicious IP addresses, and persists historical analysis reports into a **Supabase PostgreSQL** database for auditability and trend reporting.
 
 ### Key Capabilities
-- **Multi-Format Log Parser**: Efficiently parses log files (`.log`, `.txt`, `.out`), counting total logs, errors, and failed password entries using pattern matching (`IpUtils`).
-- **Dynamic Threat Risk Engine**: Categorizes suspicious IPs into **CRITICAL**, **HIGH**, **MEDIUM**, and **LOW** risk levels with automated mitigation recommendations based on failed attempt thresholds.
-- **Enterprise Layered Architecture**: Adheres strictly to SOLID design principles, clean separation of concerns, and dependency injection.
-- **Global Exception Handling**: Returns standardized JSON API envelopes (`ApiResponse<T>`) across all endpoints and exception scenarios.
-- **Structured SLF4J / Logback Logging**: Configured colorized console logging and daily rolling file appenders (`logs/loganalyzer.log`).
-- **Interactive Modern Dashboard**: Features a responsive dark/light glassmorphic UI with drag-and-drop file upload, real-time KPI metrics, interactive Chart.js visualizations, searchable threat table, sample log launcher, and JSON report export.
-- **OpenAPI 3 / Swagger Documentation**: Embedded Swagger UI at `/swagger-ui.html` for interactive API exploration.
-- **Docker & Compose Ready**: Multi-stage lightweight Docker image build and `docker-compose` setup.
-- **Automated CI/CD**: GitHub Actions workflow for automated Maven testing and artifact building.
+- **Multi-Format Log Parser**: Efficiently parses `.log`, `.txt`, and `.out` log files, tracking total log entries, severity errors, and authentication failures via regular expression pattern matching (`IpUtils`).
+- **Dynamic Threat Risk Engine**: Categorizes suspicious IPs (exceeding 5 failed login attempts) into **CRITICAL**, **HIGH**, **MEDIUM**, and **LOW** risk levels, generating automated security mitigation recommendations based on failed attempt thresholds.
+- **Overall System Risk Scoring**: Calculates overall system health status (**CRITICAL_ALERT**, **ELEVATED_RISK**, **NORMAL**) based on cumulative error and threat activity.
+- **Dual Database Architecture**: Integrated with **Supabase PostgreSQL** for persistent database storage in production and isolated **H2 In-Memory DB** for test execution.
+- **Interactive Security Dashboard UI**: Features a dark/light glassmorphic single-page web interface with drag-and-drop log upload, real-time KPI metrics, interactive Chart.js analytics, searchable threat activity tables, built-in sample log executor, and JSON report export.
+- **Standardized API Envelope**: All REST API endpoints return a uniform `ApiResponse<T>` JSON wrapper containing status codes, messages, ISO timestamps, and payload data.
+- **Global Exception Handling**: Centralized `@RestControllerAdvice` exception handler mapping file validation errors, resource missing errors, file size limits, and internal processing exceptions to standardized HTTP responses.
+- **OpenAPI 3 / Swagger Documentation**: Interactive API documentation embedded at `/swagger-ui.html` and OpenAPI specification at `/v3/api-docs`.
+- **Docker & Containerization**: Multi-stage lightweight Docker image build (`Dockerfile`) and containerized environment via `docker-compose.yml`.
+- **Automated CI/CD**: GitHub Actions workflow (`.github/workflows/ci.yml`) for automated Maven compilation, unit/integration testing, and JAR artifact packaging.
 
 ---
 
-## 🏗️ Architecture & Package Design
+## 🏗️ Architecture & Component Flow
 
-The application follows a clean 4-tier layered enterprise architecture:
+The application adheres strictly to SOLID design principles, clean separation of concerns, and dependency injection across a 4-tier enterprise architecture.
 
 ```
 com.sohel.loganalyzer
-├── LoganalyzerApplication.java  # Application Entry Point
-├── config                       # OpenAPI Swagger Documentation Configuration
-├── controller                   # REST API Layer with OpenAPI Annotations
+├── LoganalyzerApplication.java  # Application Entry Point & Bootstrapper
+├── config                       # SpringDoc OpenAPI 3 Configuration
+├── controller                   # REST Controllers & Swagger Annotations
 ├── dto                          # Data Transfer Objects & Standard ApiResponse<T> Envelopes
-├── exception                    # Custom Exceptions & @RestControllerAdvice Global Exception Handler
+├── exception                    # Custom Exceptions & @RestControllerAdvice Global Handler
 ├── model                        # JPA Entities (LogReport) & Domain Result Objects
-├── repository                   # Spring Data JPA Repository Interfaces
+├── repository                   # Spring Data JPA Repositories (Supabase PostgreSQL / H2)
 ├── security                     # Spring Security Filter Chain & CORS Configuration
-├── service                      # Service Interfaces & Implementations
-│   └── impl                     # StandardLogParser, IpRiskEvaluator, LogAnalyzerService
-├── util                         # IP Regex Utilities, File Helpers (ByteArrayMultipartFile)
+├── service                      # Service Interfaces & Business Implementations
+│   └── impl                     # StandardLogParserServiceImpl, IpRiskEvaluatorServiceImpl
+├── util                         # IPv4 Regex Parser (IpUtils), ByteArrayMultipartFile Helper
 └── validation                   # Multipart File Validator Component
 ```
 
-### Component & Data Flow Diagram
+### Request & Analysis Flow Diagram
 
 ```mermaid
 graph TD
-    Client[Web Browser / API Client] -->|HTTP Multipart POST| Controller[LogAnalyzerController]
-    Controller -->|Validate File| Validator[LogFileValidator]
-    Controller -->|Process File| Service[LogAnalyzerService]
+    Client[Browser UI / API Client] -->|HTTP Multipart POST /api/logs/analyze| Controller[LogAnalyzerController]
+    Controller -->|Validate File Rules| Validator[LogFileValidator]
+    Controller -->|Delegate Analysis| Service[LogAnalyzerService]
     Service -->|Parse Log Stream| Parser[StandardLogParserServiceImpl]
-    Parser -->|Extract IPs| IpUtil[IpUtils]
-    Service -->|Evaluate Risk| Evaluator[IpRiskEvaluatorServiceImpl]
-    Service -->|Save Analysis| Repo[LogReportRepository]
-    Repo -->|Persist| H2[(H2 In-Memory DB)]
+    Parser -->|Regex IP Extraction| IpUtil[IpUtils]
+    Service -->|Evaluate Risk & Mitigation| Evaluator[IpRiskEvaluatorServiceImpl]
+    Service -->|Persist Analysis Report| Repo[LogReportRepository]
+    Repo -->|PostgreSQL JDBC| Supabase[(Supabase PostgreSQL Database)]
     Service -->|Return Response DTO| Controller
     Controller -->|ApiResponse wrapper| Client
 ```
 
 ---
 
-## 🚀 Quick Start Guide
+## 💻 Technical Stack
 
-### Prerequisites
-- **Java JDK 17+**
-- **Maven 3.8+** (or use included `./mvnw`)
-- **Docker & Docker Compose** (optional for containerized execution)
-
----
-
-### Running Locally with Maven
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/ShaikSohel1/smart-log-analyzer-java.git
-   cd smart-log-analyzer-java
-   ```
-
-2. **Run unit & integration tests:**
-   ```bash
-   ./mvnw clean test
-   ```
-
-3. **Start the application:**
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-
-4. **Access the Application:**
-   - 🌐 **Dashboard UI**: `http://localhost:8080`
-   - 📖 **Swagger UI Documentation**: `http://localhost:8080/swagger-ui.html`
-   - 🗄️ **H2 Database Console**: `http://localhost:8080/h2-console`
+| Tier | Technologies |
+| :--- | :--- |
+| **Language & Core** | Java 17 (Eclipse Temurin JDK 17), Maven 3.9+ |
+| **Framework** | Spring Boot 3.4.2 (Spring Web, Spring Security 6, Spring Data JPA, Hibernate 6) |
+| **Database** | Supabase PostgreSQL 17.11 (`org.postgresql:postgresql`), H2 In-Memory DB (Testing Profile) |
+| **Documentation** | SpringDoc OpenAPI 3.0 (`springdoc-openapi-starter-webmvc-ui:2.8.5`) |
+| **Logging** | SLF4J, Logback (Color Console & Rolling Daily File Appender in `logs/loganalyzer.log`) |
+| **Frontend UI** | HTML5, Vanilla CSS3 (Glassmorphic System), ES6+ JavaScript, Chart.js, FontAwesome 6 |
+| **DevOps & CI/CD** | Docker, Docker Compose, GitHub Actions (`ci.yml`) |
 
 ---
 
-### Running with Docker & Docker Compose
+## 📡 REST API Documentation
 
-Build and launch the application in a lightweight containerized environment:
-
-```bash
-docker-compose up --build -d
-```
-
-To view container logs:
-```bash
-docker-compose logs -f
-```
-
-To stop the container:
-```bash
-docker-compose down
-```
-
----
-
-## 📡 REST API Reference
-
-All API responses follow the standard `ApiResponse<T>` wrapper schema:
+All API responses follow the standard `ApiResponse<T>` wrapper envelope:
 
 ```json
 {
   "success": true,
   "message": "Log file analyzed successfully.",
   "status": 200,
-  "timestamp": "2026-08-01T11:27:28.000",
+  "timestamp": "2026-10-04T18:03:46.153",
   "data": { ... }
 }
 ```
 
 ### Endpoints Overview
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/api/logs/analyze` | Upload log file (`.log`, `.txt`) for analysis & threat scoring |
-| `GET` | `/api/logs/sample` | Analyze built-in sample log file instantly |
-| `GET` | `/api/logs/history` | Retrieve 10 most recent analysis reports summary |
-| `GET` | `/api/logs/history/{id}`| Fetch detailed report by Report ID |
+| Method | Endpoint | Description | Consumes / Produces |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/logs/analyze` | Upload log file (`.log`, `.txt`, `.out`) for parsing & security scoring | `multipart/form-data` → `application/json` |
+| `GET` | `/api/logs/sample` | Execute analysis on built-in sample log file instantly | `application/json` |
+| `GET` | `/api/logs/history` | Fetch 10 most recent analysis reports summary from database | `application/json` |
+| `GET` | `/api/logs/history/{id}`| Fetch full detailed report by database Report ID | `application/json` |
 
 ---
 
-### Sample Request & Response (`POST /api/logs/analyze`)
+### API Endpoint Details & Request Examples
+
+#### 1. Analyze Log File (`POST /api/logs/analyze`)
+
+- **URL**: `/api/logs/analyze`
+- **Method**: `POST`
+- **Content-Type**: `multipart/form-data`
+- **Parameters**: `file` (MultipartFile, Required, Max 10MB)
 
 **cURL Request:**
 ```bash
@@ -153,58 +122,252 @@ curl -X POST "http://localhost:8080/api/logs/analyze" \
   -F "file=@sample.log"
 ```
 
-**JSON Response Payload:**
+**JSON Response (200 OK):**
 ```json
 {
   "success": true,
   "message": "Log file analyzed successfully.",
   "status": 200,
-  "timestamp": "2026-08-01T11:27:28.019",
+  "timestamp": "2026-10-04T18:03:46.153",
   "data": {
     "id": 1,
     "fileName": "sample.log",
-    "fileSize": 345,
-    "totalLogs": 12,
-    "errorCount": 2,
-    "failedLogins": 7,
-    "suspiciousIpCount": 1,
-    "overallStatus": "ELEVATED_RISK",
+    "fileSize": 5469,
+    "totalLogs": 57,
+    "errors": 6,
+    "errorCount": 6,
+    "failedLogins": 43,
+    "suspiciousIpCount": 4,
+    "suspiciousIPs": {
+      "198.51.100.45": 18,
+      "203.0.113.195": 12,
+      "45.33.32.156": 7,
+      "192.168.1.100": 6
+    },
     "ipActivities": [
       {
-        "ipAddress": "192.168.1.10",
-        "attemptCount": 6,
-        "riskLevel": "MEDIUM",
-        "recommendation": "Flag for security monitoring and enforce CAPTCHA / Rate limiting."
+        "ipAddress": "198.51.100.45",
+        "attemptCount": 18,
+        "riskLevel": "CRITICAL",
+        "recommendation": "Immediately block IP at firewall level and trigger incident response workflow."
+      },
+      {
+        "ipAddress": "203.0.113.195",
+        "attemptCount": 12,
+        "riskLevel": "HIGH",
+        "recommendation": "Block IP address and reset associated user accounts."
       }
     ],
-    "processedAt": "2026-08-01T11:27:28.019"
+    "overallStatus": "CRITICAL_ALERT",
+    "processedAt": "2026-10-04T18:03:44.138"
   }
 }
 ```
 
+#### 2. Analyze Built-in Sample Log (`GET /api/logs/sample`)
+
+- **URL**: `/api/logs/sample`
+- **Method**: `GET`
+- **Description**: Runs analysis on the system's built-in `sample.log` file without requiring a file upload.
+
+#### 3. Fetch Recent Analysis History (`GET /api/logs/history`)
+
+- **URL**: `/api/logs/history`
+- **Method**: `GET`
+- **Description**: Retrieves top 10 most recent analysis reports stored in Supabase PostgreSQL database ordered by creation date descending.
+
+#### 4. Get Report Details by ID (`GET /api/logs/history/{id}`)
+
+- **URL**: `/api/logs/history/{id}`
+- **Method**: `GET`
+- **Path Variable**: `id` (Long, Required)
+- **Description**: Retrieves full `LogReport` JPA entity details for the specified ID.
+
 ---
 
-## 🧪 Testing & Code Quality
+## 🔍 Log Parsing & Threat Detection Logic
 
-The project includes **17 automated unit and integration tests** covering all layers:
+### 1. Keyword Classification Rules
+- **Total Log Count**: Every line in the stream increments `totalLogs`.
+- **Severity Errors**: Lines containing `ERROR` increment `errorCount`.
+- **Authentication Failures**: Lines containing `Failed password` increment `failedLogins` and trigger IPv4 address extraction via `IpUtils.extractIp(line)`.
 
-- **Unit Tests**: `IpUtilsTest`, `LogFileValidatorTest`, `IpRiskEvaluatorServiceTest`, `StandardLogParserServiceTest`
-- **Integration Tests**: `LogAnalyzerControllerTest` (MockMvc), `LoganalyzerApplicationTests`
+### 2. Suspicious IP Threshold
+An IP address is tracked as suspicious if its cumulative failed login attempt count exceeds **5** (`attemptCount > 5`).
 
-Run all tests via command line:
-```bash
-./mvnw clean test
+### 3. IP Threat Risk Matrix (`IpRiskEvaluatorService`)
+
+| Failed Attempts | Risk Level | Mitigation Recommendation |
+| :--- | :--- | :--- |
+| `> 15` | **CRITICAL** | Immediately block IP at firewall level and trigger incident response workflow. |
+| `> 10` | **HIGH** | Block IP address and reset associated user accounts. |
+| `> 5` | **MEDIUM** | Flag for security monitoring and enforce CAPTCHA / Rate limiting. |
+| `<= 5` | **LOW** | Normal threshold. Monitor login attempts. |
+
+### 4. Overall System Health Status
+
+| Condition | Overall Status | Indicator |
+| :--- | :--- | :--- |
+| `suspiciousIpCount > 3` OR `failedLogins > 20` | **CRITICAL_ALERT** | Crimson Pulse Indicator |
+| `suspiciousIpCount > 0` OR `errorCount > 5` OR `failedLogins > 5` | **ELEVATED_RISK** | Amber Pulse Indicator |
+| Otherwise | **NORMAL** | Emerald Pulse Indicator |
+
+---
+
+## ⚙️ Configuration & Environment Variables
+
+The application can be configured via environment variables or `application.properties`:
+
+| Property / Environment Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `server.port` | `8080` | HTTP server port |
+| `SUPABASE_DB_URL` | `jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require` | Supabase PostgreSQL JDBC URL |
+| `SUPABASE_DB_USER` | `postgres.qkzfopcohwqjiblyemgh` | Database username |
+| `SUPABASE_DB_PASSWORD` | `${SUPABASE_DB_PASSWORD:}` | Database user password (passed via environment) |
+| `spring.servlet.multipart.max-file-size` | `10MB` | Maximum single file upload size limit |
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+- **Java JDK 17+**
+- **Maven 3.8+** (or use the included `./mvnw` wrapper)
+- **Docker & Docker Compose** *(optional for containerized execution)*
+
+---
+
+### Local Execution with Maven
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/ShaikSohel1/smart-log-analyzer-java.git
+   cd smart-log-analyzer-java
+   ```
+
+2. **Run automated unit & integration test suite:**
+   ```bash
+   ./mvnw clean test
+   ```
+
+3. **Start the application:**
+   ```bash
+   # Optional: Export your Supabase database password
+   export SUPABASE_DB_PASSWORD="YOUR_SUPABASE_PASSWORD"
+
+   ./mvnw spring-boot:run
+   ```
+
+4. **Access the Application Services:**
+   - 🌐 **Security Dashboard UI**: `http://localhost:8080`
+   - 📖 **Swagger UI Documentation**: `http://localhost:8080/swagger-ui.html`
+   - 🗄️ **OpenAPI JSON Spec**: `http://localhost:8080/v3/api-docs`
+
+---
+
+### Execution with Docker & Docker Compose
+
+1. **Build and run via Docker Compose:**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+2. **Inspect container logs:**
+   ```bash
+   docker-compose logs -f
+   ```
+
+3. **Stop container:**
+   ```bash
+   docker-compose down
+   ```
+
+---
+
+## 🧪 Automated Testing Strategy
+
+The project contains **17 automated unit and integration tests** covering all layers:
+
+- **Unit Tests**:
+  - `IpUtilsTest`: Verifies IPv4 pattern matching and fallback parsing.
+  - `LogFileValidatorTest`: Validates null/empty files, 10MB file size limits, and allowed extensions (`.log`, `.txt`, `.out`).
+  - `IpRiskEvaluatorServiceTest`: Evaluates risk scoring thresholds and recommendation rules.
+  - `StandardLogParserServiceTest`: Verifies log parsing stream accuracy.
+- **Integration Tests**:
+  - `LogAnalyzerControllerTest`: Full MockMvc integration testing of all REST endpoints using `@ActiveProfiles("test")` with isolated H2 in-memory DB.
+  - `LoganalyzerApplicationTests`: Verifies Spring ApplicationContext loading.
+
+### Empirical Test Execution Result
+Running `./mvnw clean test` produces clean pass results:
+```text
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  5.007 s
 ```
 
 ---
 
-## 💻 Tech Stack Summary
+## 📂 Project Directory Structure
 
-- **Core**: Java 17, Spring Boot 3.4.2
-- **Security**: Spring Security 6 (CORS, CSRF rules, Headers)
-- **Database**: H2 In-Memory Database, Spring Data JPA, Hibernate 6
-- **Validation**: Spring Boot Validation (Hibernate Validator)
-- **Documentation**: SpringDoc OpenAPI 3.0 (Swagger UI)
-- **Logging**: SLF4J, Logback (Color Console & Rolling Daily File Appender)
-- **Frontend**: HTML5, CSS3 Glassmorphism System, ES6+ JavaScript, Chart.js, FontAwesome
-- **DevOps**: Docker, Docker Compose, GitHub Actions CI
+```
+smart-log-analyzer-java/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                    # GitHub Actions CI/CD Pipeline
+├── legacy/                           # Legacy Java console prototypes
+│   ├── LogParser.java
+│   ├── Main.java
+│   ├── Report.java
+│   └── ReportGenerator.java
+├── logs/                             # Application logs (Logback daily rolling)
+├── src/
+│   ├── main/
+│   │   ├── java/com/sohel/loganalyzer/
+│   │   │   ├── LoganalyzerApplication.java
+│   │   │   ├── config/               # OpenAPI Swagger Config
+│   │   │   ├── controller/           # LogAnalyzerController REST endpoints
+│   │   │   ├── dto/                  # ApiResponse, LogAnalysisResponseDto, etc.
+│   │   │   ├── exception/            # GlobalExceptionHandler & custom exceptions
+│   │   │   ├── model/                # LogReport JPA entity & LogAnalysisResult
+│   │   │   ├── repository/           # LogReportRepository (Spring Data JPA)
+│   │   │   ├── security/             # SecurityConfig (CORS, CSRF, permitAll rules)
+│   │   │   ├── service/              # LogAnalyzerService & Service Implementations
+│   │   │   ├── util/                 # IpUtils & ByteArrayMultipartFile
+│   │   │   └── validation/           # LogFileValidator
+│   │   └── resources/
+│   │       ├── application.properties# Main application configuration (Supabase)
+│   │       ├── logback-spring.xml    # Color console & rolling file logging
+│   │       ├── sample.log            # Built-in sample log file
+│   │       └── static/               # Single-Page Dashboard (index.html, script.js, style.css)
+│   └── test/
+│       ├── java/com/sohel/loganalyzer/ # Unit & Integration Test Classes
+│       └── resources/
+│           └── application-test.properties # Test isolated H2 database properties
+├── Dockerfile                        # Multi-stage Docker production build file
+├── docker-compose.yml                # Docker Compose service definition
+├── mvnw                              # Maven Wrapper executable script
+├── pom.xml                           # Maven Project Object Model dependencies
+├── sample.log                        # Root sample log file
+└── README.md                         # Project documentation
+```
+
+---
+
+## 🔒 Security & Performance Considerations
+
+- **Secrets Protection**: Database passwords and credentials are configured via environment variables (`SUPABASE_DB_PASSWORD`) rather than hardcoded plaintext secrets.
+- **Spring Security Configuration**: Configured with CORS policy, disabled CSRF for stateless REST APIs, same-origin frame options for embedded tools, and explicitly scoped `permitAll` rules for frontend dashboard, API docs, and API endpoints.
+- **File Upload Limits**: Enforces strict 10MB maximum request size limit in both Spring Servlet Multipart resolver and `LogFileValidator` to prevent denial-of-service memory pressure.
+- **Non-Root Docker Execution**: The `Dockerfile` creates a non-root system user (`appuser:appgroup`) to execute the compiled application securely inside the container.
+
+---
+
+## 📄 License & Status
+
+- **Status**: Active & Verified
+- **License**: Apache License 2.0

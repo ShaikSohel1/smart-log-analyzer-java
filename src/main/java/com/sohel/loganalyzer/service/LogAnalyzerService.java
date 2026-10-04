@@ -44,15 +44,24 @@ public class LogAnalyzerService {
     }
 
     /**
-     * Backward-compatible analyze method.
+     * Parse raw InputStream and return raw log analysis counters.
+     *
+     * @param inputStream InputStream of the log content
+     * @return LogAnalysisResult containing parsed counters and suspicious IP map
      */
     public LogAnalysisResult analyze(InputStream inputStream) {
-        log.info("Executing backward-compatible analyze method");
+        log.info("Executing stream-level log analysis");
         return parserService.parse(inputStream);
     }
 
     /**
-     * Full enterprise file analysis workflow.
+     * Executes the full end-to-end file analysis workflow:
+     * validates file rules, parses log entries, evaluates IP security risk matrix,
+     * calculates overall system status, persists report entity to database,
+     * and constructs response DTO.
+     *
+     * @param file Uploaded log MultipartFile
+     * @return LogAnalysisResponseDto containing complete analysis metrics and risk recommendations
      */
     public LogAnalysisResponseDto analyzeFile(MultipartFile file) {
         validator.validate(file);
