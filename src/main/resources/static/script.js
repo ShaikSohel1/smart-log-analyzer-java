@@ -1,4 +1,4 @@
-// Smart Log Analyzer - Dashboard Script
+// Smart Log Analyzer - Enterprise Dashboard Script
 
 let barChartInstance = null;
 let doughnutChartInstance = null;
@@ -8,13 +8,52 @@ let currentAnalysisData = null;
 document.addEventListener("DOMContentLoaded", () => {
     initTheme();
     initDragAndDrop();
+    initYear();
+    initEventListeners();
     fetchRecentHistory();
+});
 
+// Populate Year safely in Footer
+function initYear() {
+    const yearEl = document.getElementById("year");
+    if (yearEl) {
+        yearEl.textContent = new Date().getFullYear().toString();
+    }
+}
+
+// Bind explicit event listeners to DOM elements
+function initEventListeners() {
     const fileInput = document.getElementById("fileInput");
     if (fileInput) {
         fileInput.addEventListener("change", handleFileSelect);
     }
-});
+
+    const btnRunSample = document.getElementById("btnRunSample");
+    if (btnRunSample) {
+        btnRunSample.addEventListener("click", analyzeSampleLog);
+    }
+
+    const btnClearFile = document.getElementById("btnClearFile");
+    if (btnClearFile) {
+        btnClearFile.addEventListener("click", clearFileSelection);
+    }
+
+    const btnExportJson = document.getElementById("btnExportJson");
+    if (btnExportJson) {
+        btnExportJson.addEventListener("click", exportReportJson);
+    }
+
+    const btnRefreshHistory = document.getElementById("btnRefreshHistory");
+    if (btnRefreshHistory) {
+        btnRefreshHistory.addEventListener("click", fetchRecentHistory);
+    }
+
+    const ipSearchInput = document.getElementById("ipSearchInput");
+    if (ipSearchInput) {
+        ipSearchInput.addEventListener("input", filterIpTable);
+        ipSearchInput.addEventListener("keyup", filterIpTable);
+    }
+}
 
 // Theme Management
 function initTheme() {
@@ -67,23 +106,40 @@ function initDragAndDrop() {
 
     dropZone.addEventListener('drop', (e) => {
         const dt = e.dataTransfer;
-        const files = dt.files;
-        if (files.length > 0) {
-            const fileInput = document.getElementById("fileInput");
-            fileInput.files = files;
-            handleFileSelect();
+        if (!dt || !dt.files || dt.files.length === 0) return;
+        const file = dt.files[0];
+        
+        const fileInput = document.getElementById("fileInput");
+        if (fileInput && typeof DataTransfer !== "undefined") {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
         }
+
+        const fileNameDisplay = document.getElementById("fileNameDisplay");
+        const fileSizeDisplay = document.getElementById("fileSizeDisplay");
+        const filePreview = document.getElementById("filePreview");
+
+        if (fileNameDisplay) fileNameDisplay.innerText = file.name;
+        if (fileSizeDisplay) fileSizeDisplay.innerText = `(${(file.size / 1024).toFixed(1)} KB)`;
+        if (filePreview) filePreview.classList.remove("hidden");
+
+        uploadAndAnalyzeFile(file);
     });
 }
 
 function handleFileSelect() {
     const fileInput = document.getElementById("fileInput");
-    if (fileInput.files.length === 0) return;
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
 
     const file = fileInput.files[0];
-    document.getElementById("fileNameDisplay").innerText = file.name;
-    document.getElementById("fileSizeDisplay").innerText = `(${(file.size / 1024).toFixed(1)} KB)`;
-    document.getElementById("filePreview").classList.remove("hidden");
+    const fileNameDisplay = document.getElementById("fileNameDisplay");
+    const fileSizeDisplay = document.getElementById("fileSizeDisplay");
+    const filePreview = document.getElementById("filePreview");
+
+    if (fileNameDisplay) fileNameDisplay.innerText = file.name;
+    if (fileSizeDisplay) fileSizeDisplay.innerText = `(${(file.size / 1024).toFixed(1)} KB)`;
+    if (filePreview) filePreview.classList.remove("hidden");
 
     uploadAndAnalyzeFile(file);
 }
@@ -91,11 +147,14 @@ function handleFileSelect() {
 function clearFileSelection() {
     const fileInput = document.getElementById("fileInput");
     if (fileInput) fileInput.value = "";
-    document.getElementById("filePreview").classList.add("hidden");
+    const filePreview = document.getElementById("filePreview");
+    if (filePreview) filePreview.classList.add("hidden");
 }
 
 // Upload & Analyze File
 async function uploadAndAnalyzeFile(file) {
+    if (!file) return;
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -162,6 +221,8 @@ async function analyzeSampleLog() {
 
 // Update Dashboard View
 function updateDashboard(data) {
+    if (!data) return;
+
     const totalLogs = data.totalLogs || 0;
     const errors = data.errorCount !== undefined ? data.errorCount : (data.errors || 0);
     const failedLogins = data.failedLogins || 0;
@@ -179,24 +240,32 @@ function updateDashboard(data) {
     renderCharts(data);
 }
 
-// Animate Counters
+// Animate Counters safely
 function animateCounter(id, targetValue) {
     const el = document.getElementById(id);
     if (!el) return;
 
+    targetValue = Math.max(0, parseInt(targetValue, 10) || 0);
+    if (targetValue === 0) {
+        el.innerText = "0";
+        return;
+    }
+
     let start = 0;
-    const duration = 600;
-    const stepTime = Math.abs(Math.floor(duration / (targetValue || 1)));
+    const duration = 500;
+    const stepTime = Math.max(20, Math.floor(duration / targetValue));
 
     const timer = setInterval(() => {
-        start += Math.ceil((targetValue - start) / 5);
+        const diff = targetValue - start;
+        const step = Math.max(1, Math.ceil(diff / 4));
+        start += step;
         if (start >= targetValue) {
-            el.innerText = targetValue;
+            el.innerText = targetValue.toString();
             clearInterval(timer);
         } else {
-            el.innerText = start;
+            el.innerText = start.toString();
         }
-    }, Math.max(stepTime, 20));
+    }, stepTime);
 }
 
 // Status Health Badge Update
@@ -215,6 +284,17 @@ function updateOverallStatusBadge(status) {
     } else {
         badge.innerHTML = `<span class="dot pulse" style="background-color: var(--accent-green)"></span> <span>NORMAL</span>`;
     }
+}
+
+// Helper function to sanitize HTML output
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 // Render IP Table
@@ -258,20 +338,22 @@ function renderIpTable(data) {
         else if (item.riskLevel === "HIGH") badgeClass = "badge-high";
         else if (item.riskLevel === "MEDIUM") badgeClass = "badge-medium";
 
-        body.innerHTML += `
-            <tr>
-                <td><code>${item.ipAddress}</code></td>
-                <td><strong>${item.attemptCount}</strong></td>
-                <td><span class="badge-risk ${badgeClass}">${item.riskLevel}</span></td>
-                <td>${item.recommendation || 'Flag for security review.'}</td>
-            </tr>
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><code>${escapeHtml(item.ipAddress)}</code></td>
+            <td><strong>${item.attemptCount}</strong></td>
+            <td><span class="badge-risk ${badgeClass}">${escapeHtml(item.riskLevel)}</span></td>
+            <td>${escapeHtml(item.recommendation || 'Flag for security review.')}</td>
         `;
+        body.appendChild(row);
     });
 }
 
 // Filter IP Table
 function filterIpTable() {
-    const input = document.getElementById("ipSearchInput").value.toLowerCase();
+    const inputEl = document.getElementById("ipSearchInput");
+    if (!inputEl) return;
+    const input = inputEl.value.toLowerCase();
     const rows = document.querySelectorAll("#ipTableBody tr");
 
     rows.forEach(row => {
@@ -282,15 +364,37 @@ function filterIpTable() {
 
 // Chart.js Rendering
 function renderCharts(data) {
+    if (typeof Chart === 'undefined') {
+        console.warn("Chart.js library is not loaded.");
+        return;
+    }
+
     const totalLogs = data.totalLogs || 0;
     const errors = data.errorCount !== undefined ? data.errorCount : (data.errors || 0);
     const failedLogins = data.failedLogins || 0;
     const normalLogs = Math.max(0, totalLogs - errors - failedLogins);
 
+    const isDark = document.documentElement.getAttribute("data-theme") !== "light";
+    const textColor = isDark ? "#94a3b8" : "#475569";
+    const gridColor = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+
     // Bar Chart
     const barCtx = document.getElementById("barChart");
     if (barCtx) {
         if (barChartInstance) barChartInstance.destroy();
+
+        const ctx = barCtx.getContext("2d");
+        const blueGradient = ctx.createLinearGradient(0, 0, 0, 260);
+        blueGradient.addColorStop(0, "rgba(59, 130, 246, 0.85)");
+        blueGradient.addColorStop(1, "rgba(59, 130, 246, 0.15)");
+
+        const redGradient = ctx.createLinearGradient(0, 0, 0, 260);
+        redGradient.addColorStop(0, "rgba(239, 68, 68, 0.85)");
+        redGradient.addColorStop(1, "rgba(239, 68, 68, 0.15)");
+
+        const amberGradient = ctx.createLinearGradient(0, 0, 0, 260);
+        amberGradient.addColorStop(0, "rgba(245, 158, 11, 0.85)");
+        amberGradient.addColorStop(1, "rgba(245, 158, 11, 0.15)");
 
         barChartInstance = new Chart(barCtx, {
             type: "bar",
@@ -299,18 +403,11 @@ function renderCharts(data) {
                 datasets: [{
                     label: "Count",
                     data: [totalLogs, errors, failedLogins],
-                    backgroundColor: [
-                        "rgba(59, 130, 246, 0.7)",
-                        "rgba(239, 68, 68, 0.7)",
-                        "rgba(245, 158, 11, 0.7)"
-                    ],
-                    borderColor: [
-                        "#3b82f6",
-                        "#ef4444",
-                        "#f59e0b"
-                    ],
-                    borderWidth: 2,
-                    borderRadius: 8
+                    backgroundColor: [blueGradient, redGradient, amberGradient],
+                    borderColor: ["#3b82f6", "#ef4444", "#f59e0b"],
+                    borderWidth: 1.5,
+                    borderRadius: 8,
+                    barThickness: 45
                 }]
             },
             options: {
@@ -320,8 +417,15 @@ function renderCharts(data) {
                     legend: { display: false }
                 },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: "rgba(255, 255, 255, 0.05)" } },
-                    x: { grid: { display: false } }
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 12 } },
+                        grid: { color: gridColor }
+                    },
+                    x: {
+                        ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 12, weight: '600' } },
+                        grid: { display: false }
+                    }
                 }
             }
         });
@@ -339,18 +443,29 @@ function renderCharts(data) {
                 datasets: [{
                     data: [normalLogs, errors, failedLogins],
                     backgroundColor: [
-                        "rgba(16, 185, 129, 0.8)",
-                        "rgba(239, 68, 68, 0.8)",
-                        "rgba(245, 158, 11, 0.8)"
+                        "rgba(16, 185, 129, 0.85)",
+                        "rgba(239, 68, 68, 0.85)",
+                        "rgba(245, 158, 11, 0.85)"
                     ],
-                    borderWidth: 0
+                    borderColor: isDark ? "#111827" : "#ffffff",
+                    borderWidth: 2,
+                    hoverOffset: 6
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: "bottom", labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') } }
+                    legend: {
+                        position: "bottom",
+                        labels: {
+                            color: textColor,
+                            font: { family: 'Plus Jakarta Sans', size: 12, weight: '500' },
+                            padding: 18,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    }
                 }
             }
         });
@@ -383,18 +498,22 @@ function renderHistoryTable(historyList) {
 
     historyList.forEach(item => {
         const date = item.createdAt ? new Date(item.createdAt).toLocaleString() : 'N/A';
-        body.innerHTML += `
-            <tr>
-                <td>#${item.id}</td>
-                <td><code>${item.fileName}</code></td>
-                <td>${item.totalLogs}</td>
-                <td><span style="color:var(--accent-red)">${item.errorCount}</span></td>
-                <td><span style="color:var(--accent-amber)">${item.failedLogins}</span></td>
-                <td>${item.suspiciousIpCount}</td>
-                <td><span class="badge-risk ${item.overallStatus === 'NORMAL' ? 'badge-low' : 'badge-high'}">${item.overallStatus}</span></td>
-                <td>${date}</td>
-            </tr>
+        let statusBadgeClass = "badge-low";
+        if (item.overallStatus === "CRITICAL_ALERT") statusBadgeClass = "badge-critical";
+        else if (item.overallStatus === "ELEVATED_RISK") statusBadgeClass = "badge-high";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>#${item.id}</td>
+            <td><code>${escapeHtml(item.fileName)}</code></td>
+            <td>${item.totalLogs}</td>
+            <td><span style="color:var(--accent-red)">${item.errorCount}</span></td>
+            <td><span style="color:var(--accent-amber)">${item.failedLogins}</span></td>
+            <td>${item.suspiciousIpCount}</td>
+            <td><span class="badge-risk ${statusBadgeClass}">${escapeHtml(item.overallStatus)}</span></td>
+            <td>${escapeHtml(date)}</td>
         `;
+        body.appendChild(row);
     });
 }
 
@@ -411,16 +530,22 @@ function showToast(message, type = "info") {
 
     if (type === "error") {
         toast.style.borderColor = "var(--accent-red)";
-        toastIcon.className = "fa-solid fa-triangle-exclamation";
-        toastIcon.style.color = "var(--accent-red)";
+        if (toastIcon) {
+            toastIcon.className = "fa-solid fa-triangle-exclamation";
+            toastIcon.style.color = "var(--accent-red)";
+        }
     } else if (type === "success") {
         toast.style.borderColor = "var(--accent-green)";
-        toastIcon.className = "fa-solid fa-circle-check";
-        toastIcon.style.color = "var(--accent-green)";
+        if (toastIcon) {
+            toastIcon.className = "fa-solid fa-circle-check";
+            toastIcon.style.color = "var(--accent-green)";
+        }
     } else {
         toast.style.borderColor = "var(--accent-blue)";
-        toastIcon.className = "fa-solid fa-circle-info";
-        toastIcon.style.color = "var(--accent-blue)";
+        if (toastIcon) {
+            toastIcon.className = "fa-solid fa-circle-info";
+            toastIcon.style.color = "var(--accent-blue)";
+        }
     }
 }
 
@@ -458,3 +583,12 @@ function exportReportJson() {
     downloadAnchor.click();
     downloadAnchor.remove();
 }
+
+// Explicitly export all interactive functions to global window scope for inline HTML handlers
+window.analyzeSampleLog = analyzeSampleLog;
+window.clearFileSelection = clearFileSelection;
+window.exportReportJson = exportReportJson;
+window.fetchRecentHistory = fetchRecentHistory;
+window.filterIpTable = filterIpTable;
+window.handleFileSelect = handleFileSelect;
+window.uploadAndAnalyzeFile = uploadAndAnalyzeFile;

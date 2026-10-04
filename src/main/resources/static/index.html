@@ -79,7 +79,7 @@
                         </label>
                         <input type="file" id="fileInput" accept=".log,.txt,.out">
                         
-                        <button class="btn btn-secondary" onclick="analyzeSampleLog()">
+                        <button class="btn btn-secondary" id="btnRunSample" onclick="analyzeSampleLog()">
                             <i class="fa-solid fa-bolt"></i> Run Sample Log
                         </button>
                     </div>
@@ -88,7 +88,7 @@
                         <i class="fa-solid fa-file-lines"></i>
                         <span id="fileNameDisplay">file.log</span>
                         <span id="fileSizeDisplay">(0 KB)</span>
-                        <button class="btn-clear" onclick="clearFileSelection()"><i class="fa-solid fa-xmark"></i></button>
+                        <button class="btn-clear" id="btnClearFile" onclick="clearFileSelection()"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 </div>
 
@@ -191,7 +191,7 @@
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="text" id="ipSearchInput" placeholder="Search IP or Risk Level..." onkeyup="filterIpTable()">
                     </div>
-                    <button class="btn btn-outline" onclick="exportReportJson()">
+                    <button class="btn btn-outline" id="btnExportJson" onclick="exportReportJson()">
                         <i class="fa-solid fa-download"></i> Export JSON
                     </button>
                 </div>
@@ -222,7 +222,7 @@
         <section class="history-card">
             <div class="history-header">
                 <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Analysis History</h3>
-                <button class="btn btn-sm btn-outline" onclick="fetchRecentHistory()">
+                <button class="btn btn-sm btn-outline" id="btnRefreshHistory" onclick="fetchRecentHistory()">
                     <i class="fa-solid fa-rotate-right"></i> Refresh
                 </button>
             </div>
@@ -253,7 +253,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2026 Smart Log Analyzer Enterprise. Built with Spring Boot 3 & SLF4J.</p>
+        <p>&copy; <span id="year">2026</span> Smart Log Analyzer Enterprise. Built with Spring Boot 3 & SLF4J.</p>
     </footer>
 
     <!-- Script JS -->

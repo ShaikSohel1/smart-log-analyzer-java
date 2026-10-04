@@ -1,12 +1,56 @@
-INFO User logged in
-ERROR Database failed
-INFO Request processed
-Failed password from 192.168.1.10
-Failed password from 192.168.1.10
-Failed password from 192.168.1.10
-Failed password from 192.168.1.10
-Failed password from 192.168.1.10
-Failed password from 192.168.1.10
-Failed password from 10.0.0.5
-ERROR Timeout occurred
-INFO Service restarted
+2026-08-02 08:00:01 INFO [SystemInitializer] Starting Enterprise Security & Log Monitoring Service v1.0
+2026-08-02 08:00:05 INFO [DatabaseService] HikariPool-1 connection established to PostgreSQL production cluster.
+2026-08-02 08:00:10 INFO [AuthService] User 'admin' logged in successfully from 192.168.1.15
+2026-08-02 08:00:15 INFO [AuthService] User 'jdoe' logged in successfully from 10.0.4.12
+2026-08-02 08:01:02 Failed password for invalid user root from 198.51.100.45 port 45210 ssh2
+2026-08-02 08:01:03 Failed password for invalid user admin from 198.51.100.45 port 45212 ssh2
+2026-08-02 08:01:04 Failed password for invalid user user1 from 198.51.100.45 port 45214 ssh2
+2026-08-02 08:01:05 Failed password for invalid user test from 198.51.100.45 port 45216 ssh2
+2026-08-02 08:01:06 Failed password for invalid user support from 198.51.100.45 port 45218 ssh2
+2026-08-02 08:01:07 Failed password for invalid user oracle from 198.51.100.45 port 45220 ssh2
+2026-08-02 08:01:08 Failed password for invalid user postgres from 198.51.100.45 port 45222 ssh2
+2026-08-02 08:01:09 Failed password for invalid user guest from 198.51.100.45 port 45224 ssh2
+2026-08-02 08:01:10 Failed password for invalid user sysadmin from 198.51.100.45 port 45226 ssh2
+2026-08-02 08:01:11 Failed password for invalid user backup from 198.51.100.45 port 45228 ssh2
+2026-08-02 08:01:12 Failed password for invalid user ubuntu from 198.51.100.45 port 45232 ssh2
+2026-08-02 08:01:13 Failed password for invalid user centos from 198.51.100.45 port 45234 ssh2
+2026-08-02 08:01:14 Failed password for invalid user debian from 198.51.100.45 port 45236 ssh2
+2026-08-02 08:01:15 Failed password for invalid user nginx from 198.51.100.45 port 45238 ssh2
+2026-08-02 08:01:16 Failed password for invalid user apache from 198.51.100.45 port 45240 ssh2
+2026-08-02 08:01:17 Failed password for invalid user mysql from 198.51.100.45 port 45242 ssh2
+2026-08-02 08:01:18 Failed password for invalid user redis from 198.51.100.45 port 45244 ssh2
+2026-08-02 08:02:00 WARN  [SecurityGateway] Threshold warning: Rate limit approaching for gateway proxy 10.0.1.1
+2026-08-02 08:02:15 ERROR [PaymentGateway] Connection timeout while connecting to payment provider API at https://api.stripe.com/v1/charges
+2026-08-02 08:02:18 ERROR [PaymentGateway] Retry failed for transaction tx_98410294. HTTP Status 504 Gateway Timeout
+2026-08-02 08:03:01 Failed password for user msmith from 203.0.113.195 port 51102 ssh2
+2026-08-02 08:03:03 Failed password for user msmith from 203.0.113.195 port 51104 ssh2
+2026-08-02 08:03:05 Failed password for user msmith from 203.0.113.195 port 51106 ssh2
+2026-08-02 08:03:07 Failed password for user msmith from 203.0.113.195 port 51108 ssh2
+2026-08-02 08:03:09 Failed password for user msmith from 203.0.113.195 port 51110 ssh2
+2026-08-02 08:03:11 Failed password for user msmith from 203.0.113.195 port 51112 ssh2
+2026-08-02 08:03:13 Failed password for user msmith from 203.0.113.195 port 51114 ssh2
+2026-08-02 08:03:15 Failed password for user msmith from 203.0.113.195 port 51116 ssh2
+2026-08-02 08:03:17 Failed password for user msmith from 203.0.113.195 port 51118 ssh2
+2026-08-02 08:03:19 Failed password for user msmith from 203.0.113.195 port 51120 ssh2
+2026-08-02 08:03:21 Failed password for user msmith from 203.0.113.195 port 51122 ssh2
+2026-08-02 08:03:23 Failed password for user msmith from 203.0.113.195 port 51124 ssh2
+2026-08-02 08:04:10 INFO [OrderProcessor] Processed 142 pending customer orders successfully.
+2026-08-02 08:04:45 Failed password for invalid user admin from 45.33.32.156 port 38902 ssh2
+2026-08-02 08:04:47 Failed password for invalid user admin from 45.33.32.156 port 38904 ssh2
+2026-08-02 08:04:49 Failed password for invalid user admin from 45.33.32.156 port 38906 ssh2
+2026-08-02 08:04:51 Failed password for invalid user admin from 45.33.32.156 port 38908 ssh2
+2026-08-02 08:04:53 Failed password for invalid user admin from 45.33.32.156 port 38910 ssh2
+2026-08-02 08:04:55 Failed password for invalid user admin from 45.33.32.156 port 38912 ssh2
+2026-08-02 08:04:57 Failed password for invalid user admin from 45.33.32.156 port 38914 ssh2
+2026-08-02 08:05:01 ERROR [DatabasePool] Deadlock detected in PostgreSQL transaction lock table. Transaction aborted.
+2026-08-02 08:05:05 ERROR [ReportService] OutOfMemoryError: Failed to allocate 128MB in heap space during PDF generation.
+2026-08-02 08:05:10 ERROR [CacheService] Redis cluster connection failed at node redis-primary.internal:6379
+2026-08-02 08:05:30 Failed password for user developer from 192.168.1.100 port 60102 ssh2
+2026-08-02 08:05:32 Failed password for user developer from 192.168.1.100 port 60104 ssh2
+2026-08-02 08:05:34 Failed password for user developer from 192.168.1.100 port 60106 ssh2
+2026-08-02 08:05:36 Failed password for user developer from 192.168.1.100 port 60108 ssh2
+2026-08-02 08:05:38 Failed password for user developer from 192.168.1.100 port 60110 ssh2
+2026-08-02 08:05:40 Failed password for user developer from 192.168.1.100 port 60112 ssh2
+2026-08-02 08:06:15 ERROR [NotificationService] SMTP server authentication failed for mailer@enterprise.com
+2026-08-02 08:06:30 INFO [MetricsCollector] Prometheus exporter scraped metrics: CPU 42%, Memory 68%, Disk I/O 12MB/s
+2026-08-02 08:07:00 INFO [HealthCheck] All microservice health probes returned UP (200 OK)
