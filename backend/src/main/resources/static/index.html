@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Log Analyzer | Enterprise Security Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Smart Log Analyzer</h1>
+                    <span class="badge-enterprise">ENTERPRISE EDITION v1.0</span>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <a href="/swagger-ui.html" target="_blank" class="nav-link">
+                    <i class="fa-solid fa-code"></i> API Docs
+                </a>
+                <button class="btn-icon" id="themeToggle" title="Toggle Theme">
+                    <i class="fa-solid fa-sun" id="themeIcon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="main-container">
+
+        <!-- Hero / Header Section -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h2>Security & Operational Intelligence</h2>
+                <p>Upload system logs to automatically parse events, detect brute-force threats, and evaluate IP risk levels in real time.</p>
+            </div>
+            <div class="header-status-card" id="systemHealthCard">
+                <span class="status-label">Overall Risk Status</span>
+                <div class="status-indicator" id="overallStatusBadge">
+                    <span class="dot pulse"></span>
+                    <span id="overallStatusText">READY</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- File Upload & Action Controls Section -->
+        <section class="upload-section">
+            <div class="upload-card" id="dropZone">
+                <div class="drop-zone-content">
+                    <div class="upload-icon-wrapper">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3>Drag & Drop Log File Here</h3>
+                    <p class="upload-hint">Supports <code>.log</code>, <code>.txt</code>, <code>.out</code> (Max file size: 10MB)</p>
+                    
+                    <div class="upload-controls">
+                        <label for="fileInput" class="btn btn-primary">
+                            <i class="fa-solid fa-file-import"></i> Browse File
+                        </label>
+                        <input type="file" id="fileInput" accept=".log,.txt,.out">
+                        
+                        <button class="btn btn-secondary" id="btnRunSample" onclick="analyzeSampleLog()">
+                            <i class="fa-solid fa-bolt"></i> Run Sample Log
+                        </button>
+                    </div>
+
+                    <div class="file-preview-bar hidden" id="filePreview">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span id="fileNameDisplay">file.log</span>
+                        <span id="fileSizeDisplay">(0 KB)</span>
+                        <button class="btn-clear" id="btnClearFile" onclick="clearFileSelection()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+
+                <div class="progress-bar-container hidden" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            
+            <div class="status-toast hidden" id="statusToast">
+                <i class="fa-solid fa-info-circle" id="toastIcon"></i>
+                <span id="statusText">Ready</span>
+            </div>
+        </section>
+
+        <!-- KPI Metrics Stats Grid -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Log Entries</span>
+                    <div class="stat-icon icon-blue">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-value" id="totalLogs">0</span>
+                    <span class="stat-subtext"><i class="fa-solid fa-microchip"></i> Lines Parsed</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Errors Encountered</span>
+                    <div class="stat-icon icon-red">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-value" id="errorCount">0</span>
+                    <span class="stat-subtext"><i class="fa-solid fa-bug"></i> ERROR Severity</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Failed Logins</span>
+                    <div class="stat-icon icon-amber">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-value" id="failedLogins">0</span>
+                    <span class="stat-subtext"><i class="fa-solid fa-user-shield"></i> Auth Failures</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Suspicious IPs</span>
+                    <div class="stat-icon icon-purple">
+                        <i class="fa-solid fa-user-secret"></i>
+                    </div>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-value" id="suspiciousIpCount">0</span>
+                    <span class="stat-subtext"><i class="fa-solid fa-network-wired"></i> &gt; 5 Failed Attempts</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Charts Grid -->
+        <section class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-chart-column"></i> Log Event Breakdown</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3><i class="fa-solid fa-chart-pie"></i> Risk Distribution</h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="doughnutChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Suspicious IP Activity Table Card -->
+        <section class="table-card">
+            <div class="table-header">
+                <div>
+                    <h3><i class="fa-solid fa-shield-virus"></i> Suspicious IP Threat Activity</h3>
+                    <p class="table-subtitle">IP addresses flagged for exceeding failed authentication threshold rules.</p>
+                </div>
+                <div class="table-actions">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="ipSearchInput" placeholder="Search IP or Risk Level..." onkeyup="filterIpTable()">
+                    </div>
+                    <button class="btn btn-outline" id="btnExportJson" onclick="exportReportJson()">
+                        <i class="fa-solid fa-download"></i> Export JSON
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="ipTable">
+                    <thead>
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Failed Attempts</th>
+                            <th>Threat Risk Level</th>
+                            <th>Recommended Mitigation Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ipTableBody">
+                        <tr>
+                            <td colspan="4" class="empty-table-msg">
+                                <i class="fa-solid fa-folder-open"></i> No log analysis performed yet. Upload a log file to view threat data.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Analysis History Drawer / Table Card -->
+        <section class="history-card">
+            <div class="history-header">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Analysis History</h3>
+                <button class="btn btn-sm btn-outline" id="btnRefreshHistory" onclick="fetchRecentHistory()">
+                    <i class="fa-solid fa-rotate-right"></i> Refresh
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>File Name</th>
+                            <th>Total Logs</th>
+                            <th>Errors</th>
+                            <th>Failed Logins</th>
+                            <th>Suspicious IPs</th>
+                            <th>Status</th>
+                            <th>Analyzed At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="8" class="empty-table-msg">Loading history...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; <span id="year">2026</span> Smart Log Analyzer Enterprise. Built with Spring Boot 3 & SLF4J.</p>
+    </footer>
+
+    <!-- Script JS -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,39 +1,31 @@
-HELP.md
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Node / Frontend Build Output
+node_modules/
+dist/
+.vercel/
+
+# Maven / Java Build Output
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+**/target/
+*.class
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
+# IDE & Editor Files
+.idea/
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
 .vscode/
+.settings/
+.classpath
+.project
+.qodo/
 
-target/
-*.class
+# Operating System & Log Files
+.DS_Store
 *.log
 logs/
-.DS_Store
+backend/logs/
